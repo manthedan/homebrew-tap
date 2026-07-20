@@ -11,7 +11,7 @@ class Q27 < Formula
   desc "Ternary-quantized 27B LLM inference engine for Apple silicon (Metal)"
   homepage "https://github.com/manthedan/q27"
   url "https://github.com/manthedan/q27/archive/refs/tags/metal-v0.4.0.tar.gz"
-  sha256 "73ee46b3c084b013a0049f1febddf22d5720959c1215bafbb353e14a042ce71c"
+  sha256 "c5f241dbd3f309f56c00c05abb8dde7590d7467e1e6aedacab111ba70526ac50"
   # The metal-v* tag line is independent of upstream's v0.3.x CUDA tags; set
   # the version explicitly since the "metal-v" prefix doesn't parse to one.
   version "0.4.0"
@@ -50,7 +50,19 @@ class Q27 < Formula
     (libexec/"q27").install "packaging/models.tsv"
     (libexec/"q27/share/q27-tools").install "tools/repack.py",
                                            "tools/export_tokenizer.py"
-    %w[q27 q27-bench q27-report q27-fetch].each do |t|
+    # The wrapper resolves its lib/models/tools relative to its own real
+    # path, but its symlink-chase uses `dirname "$0"` rather than `dirname
+    # "$SRC"`, so it breaks on Homebrew's nested symlink chain
+    # (/opt/homebrew/bin/q27 -> Cellar/bin/q27 -> ../libexec/q27/bin/q27).
+    # Install bin/q27 as a tiny shim that execs the libexec wrapper directly,
+    # sidestepping the resolution. The leaf tools are simple enough to keep as
+    # symlinks.
+    (bin/"q27").write <<~SH
+      #!/bin/sh
+      exec "#{libexec}/q27/bin/q27" "$@"
+    SH
+    (bin/"q27").chmod 0555
+    %w[q27-bench q27-report q27-fetch].each do |t|
       bin.install_symlink libexec/"q27/bin"/t
     end
     doc.install "README.md", "docs/METAL_PROGRESS.md", "docs/MODELS.md"
