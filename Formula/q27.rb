@@ -12,18 +12,15 @@ class Q27 < Formula
   homepage "https://github.com/manthedan/q27"
   url "https://github.com/manthedan/q27/archive/refs/tags/metal-v0.5.0.tar.gz"
   sha256 "f4872aa62d582b5c76e435cc0db37768e76cf66743e567c9b2bc72d32c123a56"
-  # The metal-v* tag line is independent of upstream's v0.3.x CUDA tags; set
-  # the version explicitly since the "metal-v" prefix doesn't parse to one.
-  version "0.5.0"
   license "MIT"
 
-  depends_on :macos
   depends_on arch: :arm64
+  depends_on :macos
 
   def install
     shader = pkgshare/"q27_kernels.metal"
     ENV["CXXFLAGS"] =
-      %Q{-O2 -std=c++17 -Wall -Wextra -DQ27_SHADER_PATH='"#{shader}"'}
+      %Q(-O2 -std=c++17 -Wall -Wextra -DQ27_SHADER_PATH='"#{shader}"')
     system "make", "build/q27-metal", "build/q27-metal-server",
            "build/tokenize_to_bin",
            "build/metal_decode_bench", "build/metal_prefill_bench",
