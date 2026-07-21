@@ -11,7 +11,7 @@ class Q27 < Formula
   desc "Ternary-quantized 27B LLM inference engine for Apple silicon (Metal)"
   homepage "https://github.com/manthedan/q27"
   url "https://github.com/manthedan/q27/archive/refs/tags/metal-v0.5.0.tar.gz"
-  sha256 "4751967c628b3279f1bde885eec1b5ce95ae45b0b0e5f5042d257d3e24b7425e"
+  sha256 "f4872aa62d582b5c76e435cc0db37768e76cf66743e567c9b2bc72d32c123a56"
   # The metal-v* tag line is independent of upstream's v0.3.x CUDA tags; set
   # the version explicitly since the "metal-v" prefix doesn't parse to one.
   version "0.5.0"
@@ -65,7 +65,9 @@ class Q27 < Formula
     %w[q27-bench q27-report q27-fetch].each do |t|
       bin.install_symlink libexec/"q27/bin"/t
     end
-    doc.install "README.md", "docs/METAL_PROGRESS.md", "docs/MODELS.md"
+    # User-facing docs (METAL_PROGRESS moved to docs/metal/ in the docs reorg).
+    doc.install "README.md", "docs/GETTING-STARTED.md", "docs/MODELS.md",
+                "docs/QA_BEFORE_RELEASES.md", "docs/SECURITY-MODEL.md"
   end
 
   def caveats
