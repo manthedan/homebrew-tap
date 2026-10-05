@@ -9,16 +9,16 @@
 # time, not even CLT). Ships the Metal CLI, the OpenAI/Anthropic-compatible
 # server, the native agent, the Ratatui TUI, and the corpus tokenizer.
 # Model artifacts and tokenizers are NOT included (see caveats). The Metal
-# shader compiles from source at runtime; the formula installs it to
-# pkgshare and the binaries carry that baked path (Q27_SHADER_PATH), so
-# they run from any directory.
+# shader compiles from source at runtime; the formula installs it to pkgshare
+# and relocatable binaries discover bin/../share/q27/q27_kernels.metal from
+# their real executable path, so no release-machine path is embedded.
 class Q27 < Formula
   desc "Ternary-quantized 27B LLM inference engine for Apple silicon (Metal)"
   homepage "https://github.com/manthedan/q27"
-  url "https://github.com/manthedan/q27/releases/download/metal-v0.6.1/q27-metal-v0.6.1-macos-arm64.tar.gz"
+  url "https://github.com/manthedan/q27/releases/download/metal-v0.7.0/q27-metal-v0.7.0-macos-arm64.tar.gz"
   # Explicit: the asset name's "arm64" otherwise parses as the version.
-  version "0.6.1"
-  sha256 "67fe7b214af92bb75a26af8b0b9978dcb3f984ad8efc8308788b7ecddb9268fa"
+  version "0.7.0"
+  sha256 "aff6f329a550869cffc6e6b117f9f3a13607ca83e0bff82b89f01b47a08845eb"
   license "MIT"
 
   depends_on arch: :arm64
@@ -27,7 +27,7 @@ class Q27 < Formula
   def install
     # Prebuilt binaries (built with MACOSX_DEPLOYMENT_TARGET=13.0).
     %w[q27-metal q27-metal-server q27-agent q27-tui
-       metal_decode_bench metal_prefill_bench].each do |b|
+       metal_prefill_bench].each do |b|
       bin.install "bin/#{b}"
     end
     bin.install "bin/tokenize_to_bin" => "q27-tokenize"
@@ -43,7 +43,8 @@ class Q27 < Formula
     (libexec/"q27/lib").install "packaging/lib/q27_bench_lib.sh"
     (libexec/"q27").install "packaging/models.tsv"
     (libexec/"q27/share/q27-tools").install "share/q27-tools/repack.py",
-                                           "share/q27-tools/export_tokenizer.py"
+                                           "share/q27-tools/export_tokenizer.py",
+                                           "share/q27-tools/prism_gguf.py"
     # The wrapper resolves its lib/models/tools relative to its own real
     # path, but its symlink-chase uses `dirname "$0"` rather than `dirname
     # "$SRC"`, so it breaks on Homebrew's nested symlink chain
@@ -64,24 +65,23 @@ class Q27 < Formula
 
   def caveats
     <<~EOS
-      q27 needs a model artifact (.q27) and tokenizer (.tok), which are not
-      distributed with this formula. Repack instructions and supported
-      checkpoints: https://github.com/manthedan/q27#weights
+      q27 needs a model pack (.q27) and tokenizer (.tok), which are not
+      distributed with this formula. Fetch the default Bonsai 2 pack
+      (6.7 GB, SHA-256 verified) and start the agent or server:
 
-        q27-metal MODEL.q27 TOKENIZER.tok --prompt "..." -n 64
-        q27-metal-server MODEL.q27 TOKENIZER.tok --port 8080
+        q27 pull b2
+        q27 agent            # Ratatui TUI on a terminal; Q27_AGENT_UI=classic
+        q27 serve            # OpenAI/Anthropic-compatible API on :8080
 
-      Chunked prefill and speculative decoding need an Apple7+ GPU family
-      device (M1 or newer). 16 GB unified memory is a practical minimum for
-      the 27B ternary artifact.
+      `q27 recommend` lists every pack and what fits this Mac. Bonsai 2 packs
+      run on 16 GB Apple silicon (M1 or newer). Other packs in the registry
+      are marked experimental and were not re-validated in this release.
 
-      The agent defaults to the Ratatui TUI on a terminal (Q27_AGENT_UI=auto);
-      Q27_AGENT_UI=classic keeps the linenoise UI:
+      Bonsai 2 weights: Created using Bonsai by Prism ML (Apache 2.0).
 
-        q27 agent MODEL.q27 MODEL.tok --session work.q27agent
-
-      Binaries find the Metal shader via the brewed share path; a custom
-      source tree can be forced with Q27_METAL_SOURCE=/path/to/q27_kernels.metal.
+      Binaries find the Metal shader relative to the brewed Cellar path; a
+      custom source tree can be forced with
+      Q27_METAL_SOURCE=/path/to/q27_kernels.metal.
     EOS
   end
 
