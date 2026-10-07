@@ -15,10 +15,10 @@
 class Q27 < Formula
   desc "Ternary-quantized 27B LLM inference engine for Apple silicon (Metal)"
   homepage "https://github.com/manthedan/q27"
-  url "https://github.com/manthedan/q27/releases/download/metal-v0.7.0/q27-metal-v0.7.0-macos-arm64.tar.gz"
+  url "https://github.com/manthedan/q27/releases/download/metal-v0.7.1/q27-metal-v0.7.1-macos-arm64.tar.gz"
   # Explicit: the asset name's "arm64" otherwise parses as the version.
-  version "0.7.0"
-  sha256 "aff6f329a550869cffc6e6b117f9f3a13607ca83e0bff82b89f01b47a08845eb"
+  version "0.7.1"
+  sha256 "b326ac0d602980fd7be6d12bd2040c9ba956a262e615ae2d0b5a6e1c2fedcc53"
   license "MIT"
 
   depends_on arch: :arm64
@@ -74,8 +74,9 @@ class Q27 < Formula
         q27 serve            # OpenAI/Anthropic-compatible API on :8080
 
       `q27 recommend` lists every pack and what fits this Mac. Bonsai 2 packs
-      run on 16 GB Apple silicon (M1 or newer). Other packs in the registry
-      are marked experimental and were not re-validated in this release.
+      run on 16 GB Apple silicon (M1 or newer). On 24 GB Macs, Qwen3.8 is a
+      validated opt-in: `q27 pull q38`, then `q27 agent q38`. Other packs in
+      the registry are marked experimental and were not re-validated.
 
       Bonsai 2 weights: Created using Bonsai by Prism ML (Apache 2.0).
 
